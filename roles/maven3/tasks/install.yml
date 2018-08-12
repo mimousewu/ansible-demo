@@ -1,0 +1,21 @@
+---
+# tasks file for maven3
+
+- name: Create temporary directory for Maven 3 download
+  command: mktemp -d
+  register: mktemp
+  when: maven3_dl_path is not defined
+
+- name: Assign temporary directory for Maven 3 download
+  set_fact: maven3_dl_path={{mktemp.stdout}}
+  when: mktemp.changed
+
+- name: Download Maven 3
+  get_url: url={{maven3_download_url}} dest={{maven3_package_path}} checksum={{maven3_package_checksum}}
+
+- name: Extract Maven 3
+  unarchive: src={{maven3_package_path}} dest=/opt copy=no creates={{maven3_install_path}}
+
+- name: Clean temporary directory for Maven 3 download
+  file: path={{maven3_dl_path}} state=absent
+  when: mktemp.changed

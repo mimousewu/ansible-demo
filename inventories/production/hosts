@@ -1,0 +1,9 @@
+[cn1-javaservers]
+prod1
+
+[cn2-javaservers]
+prod2
+
+[javaservers:children]
+cn1-javaservers
+cn2-javaservers

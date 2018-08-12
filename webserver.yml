@@ -1,0 +1,7 @@
+---
+# for java server provision
+
+- hosts: webservers
+  roles:
+    - common
+#    - nginx

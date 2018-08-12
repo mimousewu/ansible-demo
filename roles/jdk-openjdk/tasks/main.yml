@@ -1,0 +1,12 @@
+---
+# tasks file for jdk-openjdk
+
+- name: Ensure EPEL repository is enabled
+  yum: name=epel-release state=present
+
+- name: Install OpenJDK
+  yum: name=java-{{jdk_version_alt}}-openjdk-devel state=latest
+
+- name: Set JAVA_HOME
+  set_fact:
+    jdk_java_home: /etc/alternatives/java_sdk

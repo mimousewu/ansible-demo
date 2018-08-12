@@ -1,0 +1,13 @@
+---
+# defaults file for maven3
+maven3_version: 3.3.9
+maven3_package_checksum: sha1:5b4c117854921b527ab6190615f9435da730ba05
+maven3_package_filename: apache-maven-{{maven3_version}}-bin.tar.gz
+maven3_download_url: http://www.apache.org/dist/maven/maven-3/{{maven3_version}}/binaries/{{maven3_package_filename}}
+maven3_home: /opt/apache-maven
+maven3_package_path: "{{maven3_dl_path}}/{{maven3_package_filename}}"
+maven3_dl_path: "{{dl_path}}"
+maven3_dest_dir: /opt
+maven3_install_path: "{{maven3_dest_dir}}/apache-maven-{{maven3_version}}"
+maven3_m2_path: /root/.m2
+maven3_bin_path: "{{maven3_install_path}}/bin/mvn"

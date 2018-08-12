@@ -1,0 +1,21 @@
+---
+# tasks file for jdk-oracle
+
+- name: Create temporary directory for Oracle JDK download
+  command: mktemp -d
+  register: mktemp
+  when: jdk_dl_path is not defined
+
+- name: Assign temporary directory for Oracle JDK download
+  set_fact: jdk_dl_path={{mktemp.stdout}}
+  when: mktemp.changed
+
+- name: Download Oracle JDK
+  get_url: url={{jdk_download_url}} dest={{jdk_rpm_path}} headers='Cookie:oraclelicense=accept-securebackup-cookie' checksum={{jdk_rpm_checksum}}
+
+- name: Install Oracle JDK
+  yum: name={{jdk_rpm_path}} state=present
+
+- name: Clean temporary directory for Oracle JDK download
+  file: path={{jdk_dl_path}} state=absent
+  when: mktemp.changed

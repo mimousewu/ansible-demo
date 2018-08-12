@@ -1,0 +1,7 @@
+---
+- hosts: all
+  tasks:
+  - name: Remove Files
+      file: name={{item}} state=absent
+      with_items:
+         - /opt/jboss

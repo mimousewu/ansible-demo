@@ -1,0 +1,13 @@
+---
+# defaults file for jdk-oracle
+jdk_version: 8
+jdk_release: 121
+jdk_build: 13
+jdk_dl_token: e9e7ea248e2c4826b92b3f075a80e441
+jdk_version_alt: 1.{{jdk_version}}.0
+jdk_pkg_name: jdk{{jdk_version_alt}}_{{jdk_release}}
+jdk_rpm_filename: jdk-{{jdk_version}}u{{jdk_release}}-linux-x64.rpm
+jdk_rpm_checksum: sha1:bc94fc0d0c7dec448e55a222749258c0145ca914
+jdk_download_url: http://download.oracle.com/otn-pub/java/jdk/{{jdk_version}}u{{jdk_release}}-b{{jdk_build}}/{{jdk_dl_token}}/{{jdk_rpm_filename}}
+jdk_rpm_path: "{{jdk_dl_path}}/{{jdk_rpm_filename}}"
+jdk_dl_path: "{{dl_path}}"

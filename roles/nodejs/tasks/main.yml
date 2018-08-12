@@ -1,0 +1,11 @@
+---
+# tasks file for nodejs
+
+- name: Check whether NodeJS is installed
+  command: rpm -q nodejs
+  register: nodejs_rpm
+  failed_when: false
+  changed_when: false
+
+- include: install.yml
+  when: nodejs_rpm.rc != 0

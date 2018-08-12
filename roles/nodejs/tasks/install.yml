@@ -1,0 +1,21 @@
+---
+# tasks file for nodejs
+
+- name: Create temporary directory for NodeJS download
+  command: mktemp -d
+  register: mktemp
+  when: nodejs_dl_path is not defined
+
+- name: Assign temporary directory for NodeJS download
+  set_fact: nodejs_dl_path={{mktemp.stdout}}
+  when: mktemp.changed
+
+- name: Download NodeJS
+  get_url: url={{nodejs_download_url}} dest={{nodejs_rpm_path}} checksum={{nodejs_rpm_checksum}}
+
+- name: Install NodeJS
+  yum: name={{nodejs_rpm_path}} state=present
+
+- name: Clean temporary directory for NodeJS download
+  file: path={{nodejs_dl_path}} state=absent
+  when: mktemp.changed

@@ -1,0 +1,15 @@
+---
+# tasks file for maven3
+
+- name: Check whether Maven 3 is already installed
+  stat: path={{maven3_bin_path}}
+  register: stat
+
+- include: install.yml
+  when: not stat.stat.exists
+
+- name: Symlink Maven 3 installation directory
+  file: src={{maven3_install_path}} dest={{maven3_home}} state=link force=no
+
+- name: Create Maven 3 environment script
+  lineinfile: dest=/etc/profile.d/maven.sh line="export PATH=$PATH:{{maven3_home}}/bin" create=yes

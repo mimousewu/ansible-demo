@@ -1,0 +1,7 @@
+---
+# defaults file for nodejs
+nodejs_download_url: http://picnicv1.gre.hpecorp.net/vagrant/nodejs-4.5.0-1nodesource.el6.x86_64.rpm
+nodejs_rpm_checksum: sha1:711f8ec157d6c831629c8fc64056d246943e4271
+nodejs_rpm_filename: nodejs-4.5.0-1nodesource.el6.x86_64.rpm
+nodejs_dl_path: "{{dl_path}}"
+nodejs_rpm_path: "{{nodejs_dl_path}}/{{nodejs_rpm_filename}}"

@@ -1,0 +1,8 @@
+---
+# for java server provision
+
+- hosts: javaservers
+  roles:
+    - common
+    - jdk
+    - maven3

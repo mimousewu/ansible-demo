@@ -1,0 +1,4 @@
+---
+# defaults file for jdk-openjdk
+jdk_version: 8
+jdk_version_alt: 1.{{jdk_version}}.0

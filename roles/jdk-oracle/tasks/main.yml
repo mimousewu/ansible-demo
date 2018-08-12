@@ -1,0 +1,15 @@
+---
+# tasks file for jdk-oracle
+
+- name: Check whether Oracle JDK is installed
+  command: rpm -q {{jdk_pkg_name}}
+  register: jdk_rpm
+  failed_when: false
+  changed_when: false
+
+- when: jdk_rpm.rc != 0
+  include: install.yml
+
+- name: Set JAVA_HOME
+  set_fact:
+    jdk_java_home: /usr/java/default

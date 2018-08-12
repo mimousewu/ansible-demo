@@ -1,0 +1,5 @@
+---
+# defaults file for jdk
+
+#jdk_vendor: oracle
+jdk_vendor: openjdk
