@@ -46,6 +46,20 @@ resource "aws_security_group" "bastion" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 873
+    to_port     = 873
+    protocol    = "tcp"
+    cidr_blocks = ["${var.cidr_block}"]
+  }
+
+  ingress {
+    from_port   = 873
+    to_port     = 873
+    protocol    = "udp"
+    cidr_blocks = ["${var.cidr_block}"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -59,30 +73,18 @@ resource "aws_security_group" "bastion" {
 }
 
 // Add our instance description
-resource "aws_instance" "bastion" {
-  ami               = "${var.ami_id}"
-  source_dest_check = false
-  instance_type     = "${var.instance_type}"
-  subnet_id         = "${var.subnet_id}"
-  key_name          = "${var.key_name}"
-  security_groups   = ["${aws_security_group.bastion.id}"]
-
-  tags {
-    Name        = "bastion-01"
-    Environment = "${var.environment}"
-  }
-}
-
-resource "aws_instance" "bastion" {
-  ami                         = "${var.ami.ami_id}"
+resource "aws_instance" "book-gw-qa" {
+  ami                         = "${var.ami_id}"
   instance_type               = "${var.instance_type}"
-  subnet_id                   = "${element(split(",", var.public_subnet_ids), count.index)}"
+  subnet_id                   = "${element(split(",", module.subnets.private_subnet_ids), 1)}"
   key_name                    = "${var.key_name}"
   vpc_security_group_ids      = ["${aws_security_group.bastion.id}"]
-  associate_public_ip_address = true
+  associate_public_ip_address = false
+  source_dest_check           = false
 
   tags {
-    Name = "${var.name}-01"
+    Name        = "${var.name}-qa"
+    Environment = "qa"
   }
 
   lifecycle {
@@ -91,7 +93,28 @@ resource "aws_instance" "bastion" {
 }
 
 // Setup our elastic ip
-resource "aws_eip" "bastion" {
-  instance = "${aws_instance.bastion.id}"
+resource "aws_eip" "book-gw-qa" {
+  instance = "${aws_instance.book-gw-qa.id}"
   vpc      = true
+}
+
+// Add instance for each AZ
+resource "aws_instance" "book-gw-server" {
+  ami                         = "${var.ami_id}"
+  count                       = "${length(var.azs)}"
+  instance_type               = "${var.instance_type}"
+  subnet_id                   = "${element(split(",", module.subnets.private_subnet_ids), count.index)}"
+  key_name                    = "${var.key_name}"
+  vpc_security_group_ids      = ["${aws_security_group.bastion.id}"]
+  associate_public_ip_address = false
+  source_dest_check           = false
+
+  tags {
+    Name        = "${var.name}-prod"
+    Environment = "prod"
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
