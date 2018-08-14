@@ -2,30 +2,38 @@ variable "namespace" {}
 variable "profile" {}
 variable "name" {}
 variable "region" {}
-variable "azs" {}
+
+variable "azs" {
+  type = "list"
+}
+
 variable "vpc_cidr" {}
 variable "vpc_id" {}
 variable "igw_id" {}
 variable "cidr_block" {}
+variable "ami_id" {}
+variable "instance_type" {}
+variable "key_name" {}
 
 provider "aws" {
-  region                  = "cn-north-1"
+  region                  = "${var.region}"
   shared_credentials_file = "~/.aws/credentials"
-  profile                 = "costa"
+  profile                 = "${var.profile}"
 }
 
 module "subnets" {
   source             = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=master"
-  namespace          = "costa"
+  namespace          = "${var.namespace}"
   stage              = "prod"
-  name               = "book-gw"
-  region             = "cn-north-1"
-  vpc_id             = "vpc-6b836f0e"
-  igw_id             = "igw-ebdc3c8e"
-  cidr_block         = "172.31.32.0/20"
-  availability_zones = ["cn-north-1a", "cn-north-1b"]
+  name               = "${var.name}"
+  region             = "${var.region}"
+  vpc_id             = "${var.vpc_id}"
+  igw_id             = "${var.igw_id}"
+  cidr_block         = "${var.cidr_block}"
+  availability_zones = "${var.azs}"
 }
 
+// Set up a security group to the bastion
 resource "aws_security_group" "bastion" {
   name        = "bastion"
   description = "Allows ssh from the world"
@@ -48,4 +56,42 @@ resource "aws_security_group" "bastion" {
   tags {
     Name = "bastion"
   }
+}
+
+// Add our instance description
+resource "aws_instance" "bastion" {
+  ami               = "${var.ami_id}"
+  source_dest_check = false
+  instance_type     = "${var.instance_type}"
+  subnet_id         = "${var.subnet_id}"
+  key_name          = "${var.key_name}"
+  security_groups   = ["${aws_security_group.bastion.id}"]
+
+  tags {
+    Name        = "bastion-01"
+    Environment = "${var.environment}"
+  }
+}
+
+resource "aws_instance" "bastion" {
+  ami                         = "${var.ami.ami_id}"
+  instance_type               = "${var.instance_type}"
+  subnet_id                   = "${element(split(",", var.public_subnet_ids), count.index)}"
+  key_name                    = "${var.key_name}"
+  vpc_security_group_ids      = ["${aws_security_group.bastion.id}"]
+  associate_public_ip_address = true
+
+  tags {
+    Name = "${var.name}-01"
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+// Setup our elastic ip
+resource "aws_eip" "bastion" {
+  instance = "${aws_instance.bastion.id}"
+  vpc      = true
 }
