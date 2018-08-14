@@ -22,15 +22,16 @@ provider "aws" {
 }
 
 module "subnets" {
-  source             = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=master"
-  namespace          = "${var.namespace}"
-  stage              = "prod"
-  name               = "${var.name}"
-  region             = "${var.region}"
-  vpc_id             = "${var.vpc_id}"
-  igw_id             = "${var.igw_id}"
-  cidr_block         = "${var.cidr_block}"
-  availability_zones = "${var.azs}"
+  source              = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=master"
+  namespace           = "${var.namespace}"
+  stage               = "prod"
+  name                = "${var.name}"
+  region              = "${var.region}"
+  vpc_id              = "${var.vpc_id}"
+  igw_id              = "${var.igw_id}"
+  cidr_block          = "${var.cidr_block}"
+  availability_zones  = "${var.azs}"
+  nat_gateway_enabled = "true"
 }
 
 // Set up a security group to the bastion
@@ -72,14 +73,14 @@ resource "aws_security_group" "bastion" {
   }
 }
 
-// Add our instance description
+// Add QA instance description
 resource "aws_instance" "book-gw-qa" {
   ami                         = "${var.ami_id}"
   instance_type               = "${var.instance_type}"
-  subnet_id                   = "${element(split(",", module.subnets.private_subnet_ids), 1)}"
+  subnet_id                   = "${element(module.subnets.public_subnet_ids, 0)}"
   key_name                    = "${var.key_name}"
   vpc_security_group_ids      = ["${aws_security_group.bastion.id}"]
-  associate_public_ip_address = false
+  associate_public_ip_address = true
   source_dest_check           = false
 
   tags {
@@ -93,24 +94,25 @@ resource "aws_instance" "book-gw-qa" {
 }
 
 // Setup our elastic ip
-resource "aws_eip" "book-gw-qa" {
-  instance = "${aws_instance.book-gw-qa.id}"
-  vpc      = true
-}
+# eip not enough
+#resource "aws_eip" "book-gw-qa" {
+#  instance = "${aws_instance.book-gw-qa.id}"
+#  vpc      = true
+#}
 
-// Add instance for each AZ
+// Add prod instances for each AZ
 resource "aws_instance" "book-gw-server" {
   ami                         = "${var.ami_id}"
   count                       = "${length(var.azs)}"
   instance_type               = "${var.instance_type}"
-  subnet_id                   = "${element(split(",", module.subnets.private_subnet_ids), count.index)}"
+  subnet_id                   = "${element(module.subnets.private_subnet_ids, count.index)}"
   key_name                    = "${var.key_name}"
   vpc_security_group_ids      = ["${aws_security_group.bastion.id}"]
   associate_public_ip_address = false
   source_dest_check           = false
 
   tags {
-    Name        = "${var.name}-prod"
+    Name        = "${var.name}-prod${count.index + 1}"
     Environment = "prod"
   }
 
